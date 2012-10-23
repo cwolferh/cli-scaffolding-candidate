@@ -5,7 +5,7 @@ class Aeocli::ProviderAccount < Thor
   desc "list", "list provider accounts"
   # TODO maybe an optional variable for provider_type
   def list
-    puts "These are the provider accounts"
+    puts "Placeholder to list provider accounts"
   end
 
   desc "add PROVIDER_ACCOUNT_LABEL", "Add a provider account"
