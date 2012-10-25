@@ -1,6 +1,6 @@
-require 'thor'
+require 'aeocli/common_cli'
 
-class Aeocli::Provider < Thor
+class Aeocli::Provider < Aeocli::CommonCLI
 
   desc "list", "List all providers"
   def list

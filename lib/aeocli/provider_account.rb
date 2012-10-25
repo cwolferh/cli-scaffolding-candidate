@@ -1,6 +1,6 @@
-require 'thor'
+require 'aeocli/common_cli'
 
-class Aeocli::ProviderAccount < Thor
+class Aeocli::ProviderAccount < Aeocli::CommonCLI
 
   desc "list", "list provider accounts"
   # TODO maybe an optional variable for provider_type
