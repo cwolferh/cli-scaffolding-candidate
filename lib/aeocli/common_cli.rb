@@ -2,22 +2,57 @@
 require 'active_resource'
 require 'active_support'
 require 'nokogiri'
+require 'logger'
 require 'thor'
 require 'aeocli/model/base'
+require 'aeocli/model/provider_type'
 
 class Aeocli::CommonCLI < Thor
+#  def initialize(opts={}, logger=nil)
   def initialize(*args)
+    super
     begin
+      logger(logger)
       @config_location = "~/.aeolus-cli"
       @config = load_config
       configure_active_resource
     rescue => e
       handle_exception(e)
     end
-    super
+  end
+
+  protected
+
+  def provider_type_hash
+    deltacloud_driver_to_provider_type_id = Hash.new
+    provider_types = Aeocli::Model::ProviderType.all
+    if provider_types.size == 0
+      raise "Retrieved zero provider types from Conductor"
+    end
+    provider_types.each do |pt|
+      deltacloud_driver_to_provider_type_id[pt.deltacloud_driver] = pt.id
+    end
+    deltacloud_driver_to_provider_type_id
+  end
+
+  def provider_type_id(type_s)
+    begin
+      @provider_type_hash ||= provider_type_hash
+    rescue => e
+      handle_exception(e)
+    end
   end
 
   # All of the methods below borrowed from aeolus-cli
+  def logger(logger=nil)
+    @logger ||= logger
+    unless @logger
+      @logger = Logger.new(STDOUT)
+      @logger.level = Logger::DEBUG
+      @logger.datetime_format = "%Y-%m-%d %H:%M:%S"
+    end
+    return @logger
+  end
 
   private
   def handle_exception(e)
@@ -173,6 +208,46 @@ class Aeocli::CommonCLI < Thor
     File.open(File.expand_path(@config_location), 'a+', 0600) do |f|
       f.write(example)
     end
+  end
+
+  # Print Collection to STDOUT in a column layout
+  def print_collection(collection, headers)
+    widths = column_widths(collection, headers)
+
+    # Print Headers
+    widths.each_pair do |header, width|
+      printf("%-#{width + 5}s", headers[header])
+    end
+    puts ""
+
+    # Print Underlines
+    widths.each_pair do |header, width|
+      printf("%-#{width + 5}s", "-" * width)
+    end
+    puts ""
+
+    # Print collection information
+    collection.each do |resource|
+      widths.each_pair do |attr, width|
+        printf("%-#{width + 5}s", resource.attributes.include?(attr) ? resource.attributes[attr].to_s : "")
+      end
+      puts ""
+    end
+    puts ""
+  end
+
+  def column_widths(collection, headers)
+    widths = ActiveSupport::OrderedHash.new
+    headers.each_pair do |attr, header|
+      widths[attr] = header.length
+    end
+
+    collection.each do |resource|
+      headers.keys.each do |attr|
+        widths[attr] = widths[attr] > resource.attributes[attr].to_s.length ? widths[attr] : resource.attributes[attr].to_s.length
+      end
+    end
+    widths
   end
 
 end
