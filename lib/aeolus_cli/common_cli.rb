@@ -16,6 +16,17 @@ class AeolusCli::CommonCli < Thor
     configure_active_resource
   end
 
+  # abstract-y methods
+  desc "list", "List all"
+  def list(*args)
+    self.shell.say "Implement me."
+  end
+
+  desc "add", "Add one"
+  def add(*args)
+    self.shell.say "Implement me."
+  end
+
 
   protected
 
