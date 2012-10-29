@@ -1,6 +1,6 @@
 Feature: Provider
 
   Scenario: List Providers
-    When I run "aeocli provider list"
+    When I run "aeolus provider list"
     Then the output should contain "Placeholder to list providers"
 
